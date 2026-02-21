@@ -8,6 +8,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: #f5f5f5;
@@ -49,16 +51,36 @@
       font-weight: 500;
       border: 1px dashed #bbb;
     }
-    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links { display: flex; gap: 12px; list-style: none; flex-wrap: wrap; }
     .nav-links a {
-      text-decoration: underline;
+      padding: 10px 24px;
+      background: #f5f5f5;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 50px;
       color: #1a1a1a;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 500;
-      transition: color 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s;
+      cursor: pointer;
     }
-    .nav-links a:hover { color: #555; }
-    .nav-links a.active { font-weight: 700; }
+    .nav-links a:hover {
+      background: #fff;
+      border-color: #7c3aed;
+      color: #7c3aed;
+    }
+    .nav-links a.active {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: #fff;
+      font-weight: 600;
+    }
+    @media (max-width: 600px) {
+      nav { padding: 12px 16px; }
+      .nav-links { gap: 8px; }
+      .nav-links a { padding: 8px 16px; font-size: 0.85rem; }
+    }
 
     /* ── Background ── */
     .page-wrapper {
@@ -104,7 +126,9 @@
       text-align: center;
       position: relative;
       z-index: 2;
+      transition: box-shadow 0.3s ease;
     }
+    .card:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
     .card h2 {
       font-size: 1.7rem;
       font-weight: 600;
@@ -132,41 +156,158 @@
       transition: border-color 0.2s;
     }
     .input-group input::placeholder { color: #aaa; }
-    .input-group input:focus { border-color: #7c3aed; }
+    .input-group input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
 
-    /* ── Rainbow Search button ── */
+    /* ── Custom Dropdown ── */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+    .dropdown-toggle {
+      width: 100%;
+      padding: 13px 34px 13px 18px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      color: #555;
+      background: #fafafa;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .dropdown-toggle:hover {
+      border-color: #aaa;
+      background: #fff;
+      cursor: pointer;
+    }
+    .dropdown-toggle.active {
+      border-color: #7c3aed;
+      background: #fff;
+    }
+    .dropdown-arrow {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #888;
+      border-bottom: 2px solid #888;
+      transform: rotate(45deg);
+      transition: transform 0.2s;
+    }
+    .dropdown-toggle.active .dropdown-arrow {
+      transform: rotate(-135deg);
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1.5px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .dropdown-menu.open {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .dropdown-item {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover {
+      background: #f5f5f5;
+    }
+    .dropdown-item.selected {
+      background: #f0f0f0;
+      color: #7c3aed;
+      font-weight: 500;
+    }
+
+    /* ── Search Button Animations ── */
+    @keyframes moveRainbow {
+      0% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(0.90); }
+    }
+    @keyframes fadeRgb {
+      0% { outline-color: #ff4d4d; box-shadow: 0 0 12px rgba(255, 77, 77, 0.6); }
+      25% { outline-color: #ffd600; box-shadow: 0 0 12px rgba(255, 214, 0, 0.6); }
+      50% { outline-color: #7c3aed; box-shadow: 0 0 12px rgba(124, 58, 237, 0.6); }
+      70%, 100% { outline-color: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
+    }
+    @keyframes confetti {
+      to {
+        transform: translate(var(--tx), var(--ty));
+        opacity: 0;
+      }
+    }
+
+    .confetti-dot {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: confetti 0.8s ease-out forwards;
+      z-index: 1000;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    /* ── Search Button ── */
     .btn-search {
       position: relative;
       width: 100%;
       margin-top: 4px;
       padding: 14px 20px;
       border-radius: 50px;
-      border: none;
+      border: 2px solid #ddd;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
       font-size: 1rem;
       font-weight: 600;
+      background: #f5f5f5;
+      color: #333;
+      transition: all 0.2s;
+    }
+    .btn-search:hover {
       background: #fff;
+      border-color: #aaa;
+    }
+    .btn-search:active { transform: scale(0.98); }
+    .btn-search.success {
+      background: #fff;
+      border-color: #22c55e;
       color: transparent;
       background-clip: text;
       -webkit-background-clip: text;
-      background-image: linear-gradient(90deg, #ff4d4d 0%, #ffd600 30%, #7c3aed 65%, #22c55e 100%);
-      transition: transform 0.15s;
+      background-image: linear-gradient(90deg, #ff4d4d, #ffd600, #7c3aed, #22c55e);
+      outline: 2px solid;
+      outline-offset: -2px;
+      animation: bounce 0.3s ease, moveRainbow 0.15s linear 0.25s, fadeRgb 0.6s linear 0.25s;
     }
-    .btn-search::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50px;
-      padding: 2.5px;
-      background: linear-gradient(90deg, #ff4d4d, #ffd600, #7c3aed, #22c55e);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+    .btn-search.error {
+      border-color: #dc2626;
+      color: #dc2626;
+      box-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+      animation: shake 0.25s ease-in-out;
     }
-    .btn-search:hover  { transform: scale(1.02); }
-    .btn-search:active { transform: scale(0.98); }
 
     /* ── Result ── */
     .result {
@@ -182,7 +323,7 @@
     .team-yellow-tigers{ color: #ca8a04; }
     .team-green-hornets{ color: #16a34a; }
     .team-tba { color: #aaa; font-style: italic; }
-    .result.error { color: #555; }
+    .result.error { color: #dc2626; }
 
     .input-row { display: flex; gap: 12px; margin-bottom: 14px; }
     .input-row .input-group { flex: 1; margin-bottom: 0; }
@@ -263,6 +404,18 @@
       color: #333;
     }
     .player-list-wrapper tr:hover td { background: #fafafa; }
+    .player-list-wrapper tr.highlight td {
+      background: #fff3cd;
+      animation: highlightFade 2s ease-out forwards;
+    }
+    @keyframes highlightFade {
+      0% { background: #fff3cd; }
+      100% { background: transparent; }
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 32px 20px; width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -274,9 +427,9 @@
       OBMC Intramurals
     </a>
     <ul class="nav-links">
-      <li><a href="index.html">Registration</a></li>
-      <li><a href="team-checker.html">Team Checker</a></li>
-      <li><a href="players.html" class="active">List of Players</a></li>
+      <li><a href="index.html" class="nav-link">Registration</a></li>
+      <li><a href="team-checker.html" class="nav-link">Team Checker</a></li>
+      <li><a href="players.html" class="nav-link">List of Players</a></li>
     </ul>
   </nav>
 
@@ -320,7 +473,7 @@
 
       <!-- Grade + Section row -->
       <div class="input-row">
-        <div class="input-group select-wrapper">
+        <div class="input-group select-wrapper" style="display: none;">
           <select id="searchGrade">
             <option value="">Grade</option>
             <option value="7">7</option>
@@ -331,7 +484,24 @@
             <option value="12">12</option>
           </select>
         </div>
-        <div class="input-group select-wrapper">
+        <div class="input-group" style="flex: 1;">
+          <div class="custom-dropdown">
+            <div class="dropdown-toggle" data-dropdown="search-grade">
+              <span class="dropdown-text">Grade</span>
+              <span class="dropdown-arrow"></span>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-item" data-value="">Grade</div>
+              <div class="dropdown-item" data-value="7">7</div>
+              <div class="dropdown-item" data-value="8">8</div>
+              <div class="dropdown-item" data-value="9">9</div>
+              <div class="dropdown-item" data-value="10">10</div>
+              <div class="dropdown-item" data-value="11">11</div>
+              <div class="dropdown-item" data-value="12">12</div>
+            </div>
+          </div>
+        </div>
+        <div class="input-group select-wrapper" style="display: none;">
           <select id="searchSection">
             <option value="">Section</option>
             <option>Amethyst</option>
@@ -344,6 +514,26 @@
             <option>Sapphire</option>
             <option>Topaz</option>
           </select>
+        </div>
+        <div class="input-group" style="flex: 1;">
+          <div class="custom-dropdown">
+            <div class="dropdown-toggle" data-dropdown="search-section">
+              <span class="dropdown-text">Section</span>
+              <span class="dropdown-arrow"></span>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-item" data-value="">Section</div>
+              <div class="dropdown-item" data-value="Amethyst">Amethyst</div>
+              <div class="dropdown-item" data-value="Beryl">Beryl</div>
+              <div class="dropdown-item" data-value="Crystal">Crystal</div>
+              <div class="dropdown-item" data-value="Diamond">Diamond</div>
+              <div class="dropdown-item" data-value="Emerald">Emerald</div>
+              <div class="dropdown-item" data-value="Garnet">Garnet</div>
+              <div class="dropdown-item" data-value="Ruby">Ruby</div>
+              <div class="dropdown-item" data-value="Sapphire">Sapphire</div>
+              <div class="dropdown-item" data-value="Topaz">Topaz</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -372,6 +562,13 @@
   </div>
 
   <script>
+    // Dynamic nav highlighting
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.href === window.location.href) {
+        link.classList.add('active');
+      }
+    });
+
     // ── Team assignment helper (same formula as team-checker) ──
     // Team is determined by BOTH grade and section combined
     // so the same section can land on different teams depending on grade
@@ -507,6 +704,9 @@
       for (let i = 0; i < allPlayers.length; i++) {
         let p = allPlayers[i];
         let tr = document.createElement("tr");
+        tr.dataset.playerName = p.name.toLowerCase();
+        tr.dataset.playerGrade = p.grade;
+        tr.dataset.playerSection = p.section.toLowerCase();
         tr.innerHTML =
           "<td>" + (i + 1) + "</td>" +
           "<td>" + p.name + "</td>" +
@@ -519,6 +719,72 @@
     buildTable();
 
     // ── Toggle the player list visibility ──
+    // ── Custom Dropdown Handlers ──
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = this.closest('.custom-dropdown');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const isOpen = menu.classList.contains('open');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown-menu.open').forEach(m => {
+          if (m !== menu) m.classList.remove('open');
+        });
+        document.querySelectorAll('.dropdown-toggle.active').forEach(t => {
+          if (t !== this) t.classList.remove('active');
+        });
+        
+        // Toggle current dropdown
+        menu.classList.toggle('open');
+        this.classList.toggle('active');
+      });
+    });
+
+    // Handle dropdown item selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const dropdown = this.closest('.custom-dropdown');
+        const dropdownType = dropdown.querySelector('.dropdown-toggle').dataset.dropdown;
+        const value = this.dataset.value;
+        const text = this.textContent;
+        
+        // Update display text
+        dropdown.querySelector('.dropdown-text').textContent = text;
+        
+        // Update hidden select
+        if (dropdownType === 'search-grade') {
+          document.getElementById('searchGrade').value = value;
+        } else if (dropdownType === 'search-section') {
+          document.getElementById('searchSection').value = value;
+        }
+        
+        // Update selected visual state
+        dropdown.querySelectorAll('.dropdown-item').forEach(i => {
+          i.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        
+        // Close dropdown
+        dropdown.querySelector('.dropdown-menu').classList.remove('open');
+        dropdown.querySelector('.dropdown-toggle').classList.remove('active');
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.dropdown-menu.open').forEach(menu => {
+        menu.classList.remove('open');
+      });
+      document.querySelectorAll('.dropdown-toggle.active').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+    });
+
+    // Initialize first selected items for dropdowns
+    document.querySelector('[data-dropdown="search-grade"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+    document.querySelector('[data-dropdown="search-section"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+
     function toggleList() {
       let wrapper = document.getElementById("playerListWrapper");
       let btn = document.querySelector(".btn-view-list");
@@ -533,11 +799,17 @@
       let grade     = document.getElementById("searchGrade").value;
       let section   = document.getElementById("searchSection").value;
       let resultDiv = document.getElementById("result");
+      let btn       = document.querySelector(".btn-search");
+
+      // Remove previous animation states
+      btn.classList.remove("success", "error");
 
       // Validate all fields filled
       if (first === "" || last === "" || grade === "" || section === "") {
         resultDiv.innerHTML = "Please fill in all fields.";
         resultDiv.className = "result error";
+        btn.classList.add("error");
+        setTimeout(() => btn.classList.remove("error"), 250);
         return;
       }
 
@@ -557,6 +829,73 @@
           resultDiv.innerHTML =
             player.name + " is <span class='team-name " + colorClass + "'>" + player.team + "</span>!";
           resultDiv.className = "result";
+          
+          // Open player list and scroll to found player
+          let wrapper = document.getElementById("playerListWrapper");
+          if (!wrapper.classList.contains("visible")) {
+            wrapper.classList.add("visible");
+            document.querySelector(".btn-view-list").textContent = "🔼 Hide player list";
+          }
+          
+          // Find and highlight the player row
+          let playerRow = document.querySelector('tr[data-player-name="' + fullName.toLowerCase() + '"][data-player-grade="' + parseInt(grade) + '"][data-player-section="' + section.toLowerCase() + '"]');
+          if (playerRow) {
+            // Remove highlight from other rows
+            document.querySelectorAll(".player-list-wrapper tr.highlight").forEach(row => {
+              row.classList.remove("highlight");
+            });
+            // Highlight this row
+            playerRow.classList.add("highlight");
+            // Scroll to the row
+            setTimeout(() => {
+              playerRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 100);
+          }
+          
+          // Add success animation
+          btn.classList.add("success");
+          
+          // Create confetti dots
+          const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
+          const btnRect = btn.getBoundingClientRect();
+          const btnCenterX = btnRect.left + btnRect.width / 2;
+          const btnCenterY = btnRect.top + btnRect.height / 2;
+          
+          for (let i = 0; i < 8; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'confetti-dot';
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            dot.style.background = color;
+            dot.style.width = (Math.random() * 12 + 6) + 'px';
+            dot.style.height = dot.style.width;
+            dot.style.left = btnCenterX + 'px';
+            dot.style.top = btnCenterY + 'px';
+            
+            const angle = (Math.PI * 2 * i) / 8;
+            const velocity = 100 + Math.random() * 50;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 50;
+            
+            dot.style.setProperty('--tx', tx + 'px');
+            dot.style.setProperty('--ty', ty + 'px');
+            
+            document.body.appendChild(dot);
+            
+            setTimeout(() => dot.remove(), 800);
+          }
+          
+          setTimeout(() => btn.classList.remove("success"), 850);
+          // Clear form after success
+          setTimeout(() => {
+            document.getElementById("searchFirst").value = "";
+            document.getElementById("searchLast").value = "";
+            document.querySelectorAll('[data-dropdown="search-grade"], [data-dropdown="search-section"]').forEach(d => {
+              d.closest('.custom-dropdown').querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+              d.closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+            });
+            document.getElementById('searchGrade').value = '';
+            document.getElementById('searchSection').value = '';
+          }, 900);
           found = true;
           break;
         }
@@ -566,6 +905,8 @@
         resultDiv.innerHTML =
           "This person is either not on the list or you have typed name/grade and section incorrectly, please try again.";
         resultDiv.className = "result error";
+        btn.classList.add("error");
+        setTimeout(() => btn.classList.remove("error"), 250);
       }
     }
 
