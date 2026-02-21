@@ -68,11 +68,81 @@
     .radio-group label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #1a1a1a; cursor: pointer; }
     .radio-group input[type="radio"] { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border: 2px solid #888; border-radius: 50%; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
     .radio-group input[type="radio"]:checked { background: #1a1a1a; border-color: #1a1a1a; }
-    .select-wrapper { position: relative; margin-top: 16px; }
-    .select-wrapper + .select-wrapper { margin-top: 12px; }
-    .select-wrapper select { width: 100%; padding: 14px 44px 14px 20px; border: 1.5px solid #d0d0d0; border-radius: 50px; font-size: 0.92rem; font-family: 'DM Sans', sans-serif; color: #555; background: #fff; appearance: none; -webkit-appearance: none; outline: none; cursor: pointer; transition: border-color 0.2s; }
-    .select-wrapper select:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
-    .select-wrapper::after { content: ''; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; border-right: 2px solid #888; border-bottom: 2px solid #888; rotate: 45deg; pointer-events: none; margin-top: -3px; }
+    /* ── Custom Dropdown ── */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .custom-dropdown + .custom-dropdown { margin-top: 12px; }
+    .dropdown-toggle {
+      width: 100%;
+      padding: 13px 34px 13px 18px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      color: #555;
+      background: #fafafa;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .dropdown-toggle:hover {
+      border-color: #aaa;
+      background: #fff;
+    }
+    .dropdown-toggle.active {
+      border-color: #7c3aed;
+      background: #fff;
+    }
+    .dropdown-arrow {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #888;
+      border-bottom: 2px solid #888;
+      transform: rotate(45deg);
+      transition: transform 0.2s;
+    }
+    .dropdown-toggle.active .dropdown-arrow {
+      transform: rotate(-135deg);
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1.5px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .dropdown-menu.open {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .dropdown-item {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover {
+      background: #f5f5f5;
+    }
+    .dropdown-item.selected {
+      background: #f0f0f0;
+      color: #7c3aed;
+      font-weight: 500;
+    }
     .result-side { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
     
     /* ── See Team Button Animations ── */
@@ -340,31 +410,39 @@
             style="flex:1;padding:14px 20px;border:1.5px solid #d0d0d0;border-radius:50px;font-size:0.92rem;font-family:'DM Sans',sans-serif;color:#555;background:#fff;outline:none;transition:border-color 0.2s;"
             onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#d0d0d0'" />
         </div>
-        <div class="select-wrapper">
-          <select id="gradeLevel">
-            <option value="">Select Your Grade Level</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
-            <option value="12">12</option>
-          </select>
+        <div class="custom-dropdown">
+          <div class="dropdown-toggle" data-dropdown="grade">
+            <span>Select Your Grade Level</span>
+            <div class="dropdown-arrow"></div>
+          </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" data-value="">Select Your Grade Level</div>
+            <div class="dropdown-item" data-value="7">7</div>
+            <div class="dropdown-item" data-value="8">8</div>
+            <div class="dropdown-item" data-value="9">9</div>
+            <div class="dropdown-item" data-value="10">10</div>
+            <div class="dropdown-item" data-value="11">11</div>
+            <div class="dropdown-item" data-value="12">12</div>
+          </div>
         </div>
 
-        <div class="select-wrapper">
-          <select id="section">
-            <option value="">Select Your Section</option>
-            <option>Amethyst</option>
-            <option>Beryl</option>
-            <option>Crystal</option>
-            <option>Diamond</option>
-            <option>Emerald</option>
-            <option>Garnet</option>
-            <option>Ruby</option>
-            <option>Sapphire</option>
-            <option>Topaz</option>
-          </select>
+        <div class="custom-dropdown">
+          <div class="dropdown-toggle" data-dropdown="section">
+            <span>Select Your Section</span>
+            <div class="dropdown-arrow"></div>
+          </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" data-value="">Select Your Section</div>
+            <div class="dropdown-item" data-value="Amethyst">Amethyst</div>
+            <div class="dropdown-item" data-value="Beryl">Beryl</div>
+            <div class="dropdown-item" data-value="Crystal">Crystal</div>
+            <div class="dropdown-item" data-value="Diamond">Diamond</div>
+            <div class="dropdown-item" data-value="Emerald">Emerald</div>
+            <div class="dropdown-item" data-value="Garnet">Garnet</div>
+            <div class="dropdown-item" data-value="Ruby">Ruby</div>
+            <div class="dropdown-item" data-value="Sapphire">Sapphire</div>
+            <div class="dropdown-item" data-value="Topaz">Topaz</div>
+          </div>
         </div>
       </div>
 
@@ -389,6 +467,67 @@
         link.classList.add('active');
       }
     });
+
+    // ── Custom Dropdown Handlers ──
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = this.closest('.custom-dropdown');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const isOpen = menu.classList.contains('open');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown-menu.open').forEach(m => {
+          if (m !== menu) {
+            m.classList.remove('open');
+            m.closest('.custom-dropdown').querySelector('.dropdown-toggle').classList.remove('active');
+          }
+        });
+        
+        // Toggle current dropdown
+        if (isOpen) {
+          menu.classList.remove('open');
+          this.classList.remove('active');
+        } else {
+          menu.classList.add('open');
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // Handle dropdown item selection
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const dropdown = this.closest('.custom-dropdown');
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const value = this.getAttribute('data-value');
+        const text = this.textContent;
+        
+        // Update toggle text
+        toggle.querySelector('span').textContent = text;
+        
+        // Update selected state
+        menu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        // Close menu
+        menu.classList.remove('open');
+        toggle.classList.remove('active');
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.dropdown-menu.open').forEach(menu => {
+        menu.classList.remove('open');
+        menu.closest('.custom-dropdown').querySelector('.dropdown-toggle').classList.remove('active');
+      });
+    });
+
+    // Initialize first selected items for dropdowns
+    document.querySelector('[data-dropdown="grade"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+    document.querySelector('[data-dropdown="section"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
 
     const players = [
       { name: "Rhianna Arevalo", grade: 10, section: "Emerald", team: "Green Hornets" },
@@ -507,8 +646,13 @@
       let nameInput  = (document.getElementById("playerFirst").value.trim() + " " + document.getElementById("playerLast").value.trim()).trim();
       let registered = document.querySelector('input[name="registered"]:checked');
       let medical    = document.querySelector('input[name="medical"]:checked');
-      let grade      = document.getElementById("gradeLevel").value;
-      let section    = document.getElementById("section").value;
+      
+      // Get values from custom dropdowns
+      const gradeToggle = document.querySelector('[data-dropdown="grade"]');
+      const sectionToggle = document.querySelector('[data-dropdown="section"]');
+      const grade = gradeToggle.closest('.custom-dropdown').querySelector('.dropdown-item.selected')?.getAttribute('data-value') || '';
+      const section = sectionToggle.closest('.custom-dropdown').querySelector('.dropdown-item.selected')?.getAttribute('data-value') || '';
+      
       let msgEl      = document.getElementById("resultMessage");
       let mascotArea = document.getElementById("mascotArea");
       let congratsEl = document.getElementById("congratsText");
