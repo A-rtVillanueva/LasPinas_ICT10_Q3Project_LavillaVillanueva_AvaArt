@@ -1,12 +1,12 @@
 # OBMC Intramurals Registration
 
-## Setup
+## Setup (LOCAL ONLY, not reccomended)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Running
+## Running (LOCAL ONLY, not reccomended)
 
 ```bash
 python app.py
@@ -24,3 +24,4 @@ Open the HTML files in your browser (index.html, team-checker.html, players.html
 - `players.html` - Player list and search
 - `players_data.json` - Stored player data
 - `run.sh` / `run.bat` - Startup scripts for Mac/Linux and Windows
+- `Procfile` - Required for Railway deployment
