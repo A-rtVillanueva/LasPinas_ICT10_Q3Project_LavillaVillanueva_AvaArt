@@ -12,8 +12,6 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Server runs on `http://localhost:5000`
-
 Open the HTML files in your browser (index.html, team-checker.html, players.html)
 
 ## Files
