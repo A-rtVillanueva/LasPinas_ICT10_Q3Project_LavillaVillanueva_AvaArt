@@ -71,7 +71,6 @@
     .radio-group label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #1a1a1a; cursor: pointer; }
     .radio-group input[type="radio"] { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border: 2px solid #888; border-radius: 50%; cursor: pointer; transition: all 0.15s; flex-shrink: 0; } .radio-group input[type="radio"]:hover { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
     .radio-group input[type="radio"]:checked { background: #1a1a1a; border-color: #1a1a1a; }
-    /* ── Custom Dropdown ── */
     .custom-dropdown {
       position: relative;
       width: 100%;
@@ -219,7 +218,6 @@
       box-shadow: 0 0 10px currentColor;
     }
 
-    /* Neutral See Team Button (default state) */
     .btn-see-team {
       position: relative;
       width: 100%;
@@ -242,8 +240,6 @@
     .btn-see-team:active { 
       animation: bounce 0.3s ease-in-out;
     }
-
-    /* Success state - rainbow text & border animation */
     .btn-see-team.success {
       background: #fff;
       background-image: linear-gradient(90deg, #ff4d4d 0%, #ffd600 30%, #7c3aed 65%, #22c55e 100%, #ff4d4d 100%);
@@ -257,8 +253,6 @@
       outline-color: #ff4d4d;
       animation: bounce 0.3s ease-out, moveRainbow 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s, fadeRgb 0.6s ease-in-out 0.25s;
     }
-
-    /* Error state - shake animation with red accent */
     .btn-see-team.error {
       border: 2px solid #dc2626;
       background: #fff;
@@ -314,12 +308,9 @@
       100% { opacity: 0;    }
     }
 
-    /* Blob transition for smooth team color shift */
     .blob {
       transition: background 1s ease, opacity 1s ease, transform 1.2s ease;
     }
-
-    /* Particle burst container */
     .particles {
       position: fixed;
       inset: 0;
@@ -338,7 +329,6 @@
       100% { opacity: 0;   transform: translate(var(--tx), var(--ty)) scale(0.2); }
     }
 
-    /* Card pulse ring */
     .card::after {
       content: '';
       position: absolute;

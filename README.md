@@ -1,1 +1,0 @@
-# LasPinas_ICT10_Q3Project_LavillaVillanueva_AvaArt
