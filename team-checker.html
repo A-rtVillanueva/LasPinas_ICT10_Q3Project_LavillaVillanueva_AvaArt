@@ -754,11 +754,8 @@
           document.querySelectorAll('[data-dropdown="grade"], [data-dropdown="section"]').forEach(d => {
             d.closest('.custom-dropdown').querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
             d.closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+            d.querySelector('span').textContent = d.getAttribute('data-dropdown') === 'grade' ? 'Select Your Grade Level' : 'Select Your Section';
           });
-          const gradeSelect = document.getElementById('gradeLevel');
-          const sectionSelect = document.getElementById('section');
-          if (gradeSelect) gradeSelect.value = '';
-          if (sectionSelect) sectionSelect.value = '';
           document.querySelectorAll('input[name="registered"], input[name="medical"]').forEach(r => r.checked = false);
         }, 900);
         triggerTeamEffect(found.team);

@@ -892,9 +892,8 @@
             document.querySelectorAll('[data-dropdown="search-grade"], [data-dropdown="search-section"]').forEach(d => {
               d.closest('.custom-dropdown').querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
               d.closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+              d.querySelector('span').textContent = d.getAttribute('data-dropdown') === 'search-grade' ? 'Select Your Grade Level' : 'Select Your Section';
             });
-            document.getElementById('searchGrade').value = '';
-            document.getElementById('searchSection').value = '';
           }, 900);
           found = true;
           break;
