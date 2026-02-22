@@ -824,7 +824,7 @@
         section: section
       };
 
-      fetch('${window.location.origin}/api/search-player', {
+      fetch(`${window.location.origin}/api/search-player`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
