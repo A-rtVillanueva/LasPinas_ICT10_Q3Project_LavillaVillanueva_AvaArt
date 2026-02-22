@@ -69,6 +69,9 @@
       background: #fff;
       border-color: #7c3aed;
       color: #7c3aed;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+      transition: all 0.3s ease;
     }
     .nav-links a.active {
       background: #7c3aed;
@@ -218,7 +221,7 @@
       overflow-y: auto;
     }
     .dropdown-item {
-      padding: 10px 18px;
+      padding: 12px 18px;
       font-size: 0.9rem;
       color: #555;
       cursor: pointer;
@@ -316,6 +319,11 @@
       color: #333;
       min-height: 24px;
       line-height: 1.6;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     .result .team-name { font-weight: 700; }
     .team-blue-bears   { color: #2563eb; }
@@ -801,10 +809,8 @@
       let resultDiv = document.getElementById("result");
       let btn       = document.querySelector(".btn-search");
 
-      // Remove previous animation states
       btn.classList.remove("success", "error");
 
-      // Validate all fields filled
       if (first === "" || last === "" || grade === "" || section === "") {
         resultDiv.innerHTML = "Please fill in all fields.";
         resultDiv.className = "result error";
@@ -813,49 +819,50 @@
         return;
       }
 
-      let fullName = first + " " + last;
+      const payload = {
+        firstName: first,
+        lastName: last,
+        grade: parseInt(grade),
+        section: section
+      };
 
-      // Loop through all players (hardcoded + registered) to find a match
-      let allPlayers = getAllPlayers();
-      let found = false;
-      for (let i = 0; i < allPlayers.length; i++) {
-        let player = allPlayers[i];
-        let nameMatch    = player.name.toLowerCase() === fullName.toLowerCase();
-        let gradeMatch   = player.grade === parseInt(grade);
-        let sectionMatch = player.section.toLowerCase() === section.toLowerCase();
-
-        if (nameMatch && gradeMatch && sectionMatch) {
+      fetch('http://localhost:5000/api/search-player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          resultDiv.innerHTML = "This person is either not on the list or you have typed name/grade and section incorrectly, please try again.";
+          resultDiv.className = "result error";
+          btn.classList.add("error");
+          setTimeout(() => btn.classList.remove("error"), 250);
+        } else if (data.success && data.player) {
+          let player = data.player;
           let colorClass = teamColorClass[player.team];
-          resultDiv.innerHTML =
-            player.name + " is <span class='team-name " + colorClass + "'>" + player.team + "</span>!";
+          resultDiv.innerHTML = player.name + " is <span class='team-name " + colorClass + "'>" + player.team + "</span>!";
           resultDiv.className = "result";
           
-          // Open player list and scroll to found player
           let wrapper = document.getElementById("playerListWrapper");
           if (!wrapper.classList.contains("visible")) {
             wrapper.classList.add("visible");
             document.querySelector(".btn-view-list").textContent = "🔼 Hide player list";
           }
           
-          // Find and highlight the player row
-          let playerRow = document.querySelector('tr[data-player-name="' + fullName.toLowerCase() + '"][data-player-grade="' + parseInt(grade) + '"][data-player-section="' + section.toLowerCase() + '"]');
+          let playerRow = document.querySelector('tr[data-player-name="' + first.toLowerCase() + ' ' + last.toLowerCase() + '"][data-player-grade="' + parseInt(grade) + '"][data-player-section="' + section.toLowerCase() + '"]');
           if (playerRow) {
-            // Remove highlight from other rows
             document.querySelectorAll(".player-list-wrapper tr.highlight").forEach(row => {
               row.classList.remove("highlight");
             });
-            // Highlight this row
             playerRow.classList.add("highlight");
-            // Scroll to the row
             setTimeout(() => {
               playerRow.scrollIntoView({ behavior: "smooth", block: "center" });
             }, 100);
           }
           
-          // Add success animation
           btn.classList.add("success");
           
-          // Create confetti dots
           const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
           const btnRect = btn.getBoundingClientRect();
           const btnCenterX = btnRect.left + btnRect.width / 2;
@@ -880,12 +887,10 @@
             dot.style.setProperty('--ty', ty + 'px');
             
             document.body.appendChild(dot);
-            
             setTimeout(() => dot.remove(), 800);
           }
           
           setTimeout(() => btn.classList.remove("success"), 850);
-          // Clear form after success
           setTimeout(() => {
             document.getElementById("searchFirst").value = "";
             document.getElementById("searchLast").value = "";
@@ -895,18 +900,14 @@
               d.querySelector('span').textContent = d.getAttribute('data-dropdown') === 'search-grade' ? 'Select Your Grade Level' : 'Select Your Section';
             });
           }, 900);
-          found = true;
-          break;
         }
-      }
-
-      if (!found) {
-        resultDiv.innerHTML =
-          "This person is either not on the list or you have typed name/grade and section incorrectly, please try again.";
+      })
+      .catch(error => {
+        resultDiv.innerHTML = "Connection error. Make sure Flask server is running.";
         resultDiv.className = "result error";
         btn.classList.add("error");
         setTimeout(() => btn.classList.remove("error"), 250);
-      }
+      });
     }
 
     // Enter key on any field triggers search

@@ -30,6 +30,9 @@
       background: #fff;
       border-color: #7c3aed;
       color: #7c3aed;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+      transition: all 0.3s ease;
     }
     .nav-links a.active {
       background: #7c3aed;
@@ -66,7 +69,7 @@
     .question:first-of-type { margin-top: 0; }
     .radio-group { display: flex; gap: 24px; margin-bottom: 4px; }
     .radio-group label { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #1a1a1a; cursor: pointer; }
-    .radio-group input[type="radio"] { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border: 2px solid #888; border-radius: 50%; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+    .radio-group input[type="radio"] { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border: 2px solid #888; border-radius: 50%; cursor: pointer; transition: all 0.15s; flex-shrink: 0; } .radio-group input[type="radio"]:hover { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
     .radio-group input[type="radio"]:checked { background: #1a1a1a; border-color: #1a1a1a; }
     /* ── Custom Dropdown ── */
     .custom-dropdown {
@@ -129,7 +132,7 @@
       overflow-y: auto;
     }
     .dropdown-item {
-      padding: 10px 18px;
+      padding: 12px 18px;
       font-size: 0.9rem;
       color: #555;
       cursor: pointer;
@@ -263,7 +266,11 @@
       animation: shake 0.25s ease-in-out;
       box-shadow: 0 0 25px rgba(220, 38, 38, 0.5);
     }
-    .result-message { text-align: center; font-size: 0.95rem; color: #333; line-height: 1.6; }
+    .result-message { text-align: center; font-size: 0.95rem; color: #333; line-height: 1.6; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
     .result-message.error { color: #dc2626; }
     .mascot-area { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
     .mascot-area.visible { display: flex; }
@@ -643,11 +650,11 @@
     }
 
     function checkEligibility() {
-      let nameInput  = (document.getElementById("playerFirst").value.trim() + " " + document.getElementById("playerLast").value.trim()).trim();
+      let first  = document.getElementById("playerFirst").value.trim();
+      let last   = document.getElementById("playerLast").value.trim();
       let registered = document.querySelector('input[name="registered"]:checked');
       let medical    = document.querySelector('input[name="medical"]:checked');
       
-      // Get values from custom dropdowns
       const gradeToggle = document.querySelector('[data-dropdown="grade"]');
       const sectionToggle = document.querySelector('[data-dropdown="section"]');
       const grade = gradeToggle.closest('.custom-dropdown').querySelector('.dropdown-item.selected')?.getAttribute('data-value') || '';
@@ -660,14 +667,12 @@
       let refreshBtn = document.getElementById("refreshBtn");
       let btn        = document.querySelector(".btn-see-team");
 
-      // Remove previous animation states
       btn.classList.remove("success", "error");
-
       mascotArea.classList.remove("visible");
       msgEl.className = "result-message";
       if (refreshBtn) refreshBtn.style.display = "none";
 
-      if (!document.getElementById("playerFirst").value.trim() || !document.getElementById("playerLast").value.trim() || !registered || !medical || grade === "" || section === "") {
+      if (!first || !last || !registered || !medical || grade === "" || section === "") {
         msgEl.textContent = "Please fill in your name and answer all fields before checking.";
         msgEl.className   = "result-message error";
         btn.classList.add("error");
@@ -675,96 +680,90 @@
         return;
       }
 
-      let isRegistered = registered.value === "yes";
-      let hasMedical   = medical.value === "yes";
-      let validGrade   = parseInt(grade) >= 7 && parseInt(grade) <= 10;
+      const payload = {
+        firstName: first,
+        lastName: last,
+        grade: parseInt(grade),
+        section: section,
+        registered: registered.value,
+        medical: medical.value
+      };
 
-      if (!isRegistered || !hasMedical || !validGrade) {
-        let list = [];
-        if (!isRegistered) list.push("Please register online for the Intramurals.");
-        if (!hasMedical)   list.push("Please secure a medical clearance from the clinic.");
-        if (!validGrade)   list.push("Intramurals is only open to students in Grades 7 to 10.");
-        msgEl.textContent = list.join(" ");
-        msgEl.className   = "result-message error";
+      fetch('http://localhost:5000/api/check-team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          msgEl.textContent = data.error;
+          msgEl.className = "result-message error";
+          btn.classList.add("error");
+          setTimeout(() => btn.classList.remove("error"), 250);
+        } else if (data.success && data.player) {
+          let found = data.player;
+          let colorClass = teamColorClass[found.team];
+          msgEl.textContent = "";
+          mascotImg.src = mascotImages[found.team];
+          congratsEl.innerHTML = "Congratulations! You are <span class='team-name " + colorClass + "'>" + found.team + "</span>!";
+          mascotArea.classList.add("visible");
+          if (refreshBtn) refreshBtn.style.display = "none";
+          
+          btn.classList.add("success");
+          
+          const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
+          const btnRect = btn.getBoundingClientRect();
+          const btnCenterX = btnRect.left + btnRect.width / 2;
+          const btnCenterY = btnRect.top + btnRect.height / 2;
+          
+          for (let i = 0; i < 8; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'confetti-dot';
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            dot.style.background = color;
+            dot.style.width = (Math.random() * 12 + 6) + 'px';
+            dot.style.height = dot.style.width;
+            dot.style.left = btnCenterX + 'px';
+            dot.style.top = btnCenterY + 'px';
+            
+            const angle = (Math.PI * 2 * i) / 8;
+            const velocity = 100 + Math.random() * 50;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 50;
+            
+            dot.style.setProperty('--tx', tx + 'px');
+            dot.style.setProperty('--ty', ty + 'px');
+            
+            document.body.appendChild(dot);
+            setTimeout(() => dot.remove(), 800);
+          }
+          
+          setTimeout(() => btn.classList.remove("success"), 850);
+          setTimeout(() => {
+            document.getElementById("playerFirst").value = "";
+            document.getElementById("playerLast").value = "";
+            document.querySelectorAll('[data-dropdown="grade"], [data-dropdown="section"]').forEach(d => {
+              d.closest('.custom-dropdown').querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+              d.closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+              d.querySelector('span').textContent = d.getAttribute('data-dropdown') === 'grade' ? 'Select Your Grade Level' : 'Select Your Section';
+            });
+            document.querySelectorAll('input[name="registered"], input[name="medical"]').forEach(r => r.checked = false);
+          }, 900);
+          triggerTeamEffect(found.team);
+        } else {
+          msgEl.textContent = "Name not found. Make sure your name, grade, and section match exactly.";
+          msgEl.className = "result-message error";
+          btn.classList.add("error");
+          setTimeout(() => btn.classList.remove("error"), 250);
+        }
+      })
+      .catch(error => {
+        msgEl.textContent = "Connection error. Make sure Flask server is running.";
+        msgEl.className = "result-message error";
         btn.classList.add("error");
         setTimeout(() => btn.classList.remove("error"), 250);
-        return;
-      }
-
-      // Loop through ALL players (hardcoded + registered) to find by name + grade + section
-      let found = null;
-      let allPlayers = getAllPlayers();
-      for (let i = 0; i < allPlayers.length; i++) {
-        let p = allPlayers[i];
-        if (
-          p.name.toLowerCase()    === nameInput.toLowerCase() &&
-          p.grade                 === parseInt(grade) &&
-          p.section.toLowerCase() === section.toLowerCase()
-        ) {
-          found = p;
-          break;
-        }
-      }
-
-      if (found) {
-        let colorClass = teamColorClass[found.team];
-        msgEl.textContent = "";
-        mascotImg.src = mascotImages[found.team];
-        congratsEl.innerHTML = "Congratulations! You are <span class='team-name " + colorClass + "'>" + found.team + "</span>!";
-        mascotArea.classList.add("visible");
-        if (refreshBtn) refreshBtn.style.display = "none";
-        
-        // Add success animation
-        btn.classList.add("success");
-        
-        // Create confetti dots
-        const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
-        const btnRect = btn.getBoundingClientRect();
-        const btnCenterX = btnRect.left + btnRect.width / 2;
-        const btnCenterY = btnRect.top + btnRect.height / 2;
-        
-        for (let i = 0; i < 8; i++) {
-          const dot = document.createElement('div');
-          dot.className = 'confetti-dot';
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          dot.style.background = color;
-          dot.style.width = (Math.random() * 12 + 6) + 'px';
-          dot.style.height = dot.style.width;
-          dot.style.left = btnCenterX + 'px';
-          dot.style.top = btnCenterY + 'px';
-          
-          const angle = (Math.PI * 2 * i) / 8;
-          const velocity = 100 + Math.random() * 50;
-          const tx = Math.cos(angle) * velocity;
-          const ty = Math.sin(angle) * velocity - 50;
-          
-          dot.style.setProperty('--tx', tx + 'px');
-          dot.style.setProperty('--ty', ty + 'px');
-          
-          document.body.appendChild(dot);
-          
-          setTimeout(() => dot.remove(), 800);
-        }
-        
-        setTimeout(() => btn.classList.remove("success"), 850);
-        // Reset form after animation
-        setTimeout(() => {
-          document.getElementById("playerFirst").value = "";
-          document.getElementById("playerLast").value = "";
-          document.querySelectorAll('[data-dropdown="grade"], [data-dropdown="section"]').forEach(d => {
-            d.closest('.custom-dropdown').querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
-            d.closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
-            d.querySelector('span').textContent = d.getAttribute('data-dropdown') === 'grade' ? 'Select Your Grade Level' : 'Select Your Section';
-          });
-          document.querySelectorAll('input[name="registered"], input[name="medical"]').forEach(r => r.checked = false);
-        }, 900);
-        triggerTeamEffect(found.team);
-      } else {
-        msgEl.textContent = "Name not found. Make sure your name, grade, and section match exactly.";
-        msgEl.className   = "result-message error";
-        btn.classList.add("error");
-        setTimeout(() => btn.classList.remove("error"), 250);
-      }
+      });
     }
 
     // ── Team color effect ──

@@ -54,6 +54,9 @@
       background: #fff;
       border-color: #7c3aed;
       color: #7c3aed;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+      transition: all 0.3s ease;
     }
     .nav-links a.active {
       background: #7c3aed;
@@ -226,7 +229,7 @@
     }
 
     .dropdown-item {
-      padding: 10px 18px;
+      padding: 12px 18px;
       font-size: 0.9rem;
       color: #555;
       cursor: pointer;
@@ -360,6 +363,11 @@
       color: #444;
       min-height: 20px;
       line-height: 1.5;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     .message.success { color: #16a34a; }
     .message.error   { color: #dc2626; }
@@ -623,7 +631,6 @@
       let msg     = document.getElementById("message");
       let btn     = document.querySelector(".btn-register");
 
-      // Remove previous animation states
       btn.classList.remove("success", "error");
 
       if (!first || !last || !grade || !section) {
@@ -634,83 +641,81 @@
         return;
       }
 
-      let fullName = first + " " + last;
+      const payload = {
+        firstName: first,
+        lastName: last,
+        grade: parseInt(grade),
+        section: section
+      };
 
-      // Load existing registered players from localStorage
-      let stored = JSON.parse(localStorage.getItem("registeredPlayers") || "[]");
-
-      // Check for duplicate
-      for (let i = 0; i < stored.length; i++) {
-        if (
-          stored[i].name.toLowerCase()    === fullName.toLowerCase() &&
-          stored[i].grade                 === parseInt(grade) &&
-          stored[i].section.toLowerCase() === section.toLowerCase()
-        ) {
-          msg.textContent = "You are already registered!";
-          msg.className   = "message error";
+      fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          msg.textContent = data.error;
+          msg.className = "message error";
           btn.classList.add("error");
           setTimeout(() => btn.classList.remove("error"), 250);
-          return;
+        } else {
+          msg.textContent = "Registration successful! You are now on the players list.";
+          msg.className = "message success";
+          btn.classList.add("success");
+          
+          const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
+          const btnRect = btn.getBoundingClientRect();
+          const btnCenterX = btnRect.left + btnRect.width / 2;
+          const btnCenterY = btnRect.top + btnRect.height / 2;
+          
+          for (let i = 0; i < 8; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'confetti-dot';
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            dot.style.background = color;
+            dot.style.width = (Math.random() * 12 + 6) + 'px';
+            dot.style.height = dot.style.width;
+            dot.style.left = btnCenterX + 'px';
+            dot.style.top = btnCenterY + 'px';
+            
+            const angle = (Math.PI * 2 * i) / 8;
+            const velocity = 100 + Math.random() * 50;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity - 50;
+            
+            dot.style.setProperty('--tx', tx + 'px');
+            dot.style.setProperty('--ty', ty + 'px');
+            
+            document.body.appendChild(dot);
+            setTimeout(() => dot.remove(), 800);
+          }
+          
+          setTimeout(() => btn.classList.remove("success"), 850);
+
+          document.getElementById("regFirst").value   = "";
+          document.getElementById("regLast").value    = "";
+          document.getElementById("regGrade").value   = "";
+          document.getElementById("regSection").value = "";
+          
+          document.querySelectorAll('.dropdown-text').forEach(text => {
+            const dropdownType = text.closest('.custom-dropdown').querySelector('.dropdown-toggle').dataset.dropdown;
+            text.textContent = dropdownType === 'grade' ? 'Grade' : 'Section';
+          });
+          document.querySelectorAll('.dropdown-item.selected').forEach(item => {
+            item.classList.remove('selected');
+          });
+          document.querySelector('[data-dropdown="grade"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
+          document.querySelector('[data-dropdown="section"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
         }
-      }
-
-      // Save new player with assigned team
-      let assignedTeam = assignTeam(grade, section);
-      stored.push({ name: fullName, grade: parseInt(grade), section: section, team: assignedTeam });
-      localStorage.setItem("registeredPlayers", JSON.stringify(stored));
-
-      msg.textContent = "Registration successful! You are now on the players list.";
-      msg.className   = "message success";
-      
-      // Add success animation
-      btn.classList.add("success");
-      
-      // Create confetti dots
-      const colors = ['#ff4d4d', '#ffd600', '#7c3aed', '#22c55e'];
-      const btnRect = btn.getBoundingClientRect();
-      const btnCenterX = btnRect.left + btnRect.width / 2;
-      const btnCenterY = btnRect.top + btnRect.height / 2;
-      
-      for (let i = 0; i < 8; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'confetti-dot';
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        dot.style.background = color;
-        dot.style.width = (Math.random() * 12 + 6) + 'px';
-        dot.style.height = dot.style.width;
-        dot.style.left = btnCenterX + 'px';
-        dot.style.top = btnCenterY + 'px';
-        
-        const angle = (Math.PI * 2 * i) / 8;
-        const velocity = 100 + Math.random() * 50;
-        const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity - 50;
-        
-        dot.style.setProperty('--tx', tx + 'px');
-        dot.style.setProperty('--ty', ty + 'px');
-        
-        document.body.appendChild(dot);
-        
-        setTimeout(() => dot.remove(), 800);
-      }
-      
-      setTimeout(() => btn.classList.remove("success"), 850);
-
-      document.getElementById("regFirst").value   = "";
-      document.getElementById("regLast").value    = "";
-      document.getElementById("regGrade").value   = "";
-      document.getElementById("regSection").value = "";
-      
-      // Reset custom dropdowns
-      document.querySelectorAll('.dropdown-text').forEach(text => {
-        const dropdownType = text.closest('.custom-dropdown').querySelector('.dropdown-toggle').dataset.dropdown;
-        text.textContent = dropdownType === 'grade' ? 'Grade' : 'Section';
+      })
+      .catch(error => {
+        msg.textContent = "Connection error. Make sure Flask server is running.";
+        msg.className = "message error";
+        btn.classList.add("error");
+        setTimeout(() => btn.classList.remove("error"), 250);
       });
-      document.querySelectorAll('.dropdown-item.selected').forEach(item => {
-        item.classList.remove('selected');
-      });
-      document.querySelector('[data-dropdown="grade"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
-      document.querySelector('[data-dropdown="section"]').closest('.custom-dropdown').querySelector('[data-value=""]').classList.add('selected');
     }
     // Enter key support for registration
     ['regFirst', 'regLast'].forEach(id => {
