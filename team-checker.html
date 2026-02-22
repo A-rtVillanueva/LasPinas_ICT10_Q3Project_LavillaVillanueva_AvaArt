@@ -679,7 +679,7 @@
         medical: medical.value
       };
 
-      fetch('${window.location.origin}/api/check-team', {
+      fetch(`${window.location.origin}/api/check-team`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
