@@ -648,7 +648,7 @@
         section: section
       };
 
-      fetch('http://localhost:5000/api/register', {
+      fetch('${window.location.origin}/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
